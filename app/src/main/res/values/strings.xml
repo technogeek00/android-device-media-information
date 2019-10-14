@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Device Media Inspection</string>
+    <string name="cast_text">Casting Active</string>
+
+    <!-- Inspector Tabs -->
+    <string name="device_tab">Device Information</string>
+    <string name="display_tab">Connected Displays</string>
+    <string name="codec_tab">Available Codecs</string>
+    <string name="drm_tab">DRM Systems</string>
+    <string name="routes_tab">Media Routes</string>
+
+</resources>
