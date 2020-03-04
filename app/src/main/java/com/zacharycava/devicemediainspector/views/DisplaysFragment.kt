@@ -34,7 +34,19 @@ class DisplaysFragment : InformationFragment(true) {
         info.add(Pair("Supports Protected Buffers","${display.supportsProtectedBuffers}"))
 
         info.add(Pair("Render Output", display.renderOutput.toString()))
-        info.add(Pair("Physical Output", display.physicalOutput?.toString() ?: ""))
+
+        if(display.physicalOutput != null) {
+            info.add(Pair("Physical Output", display.physicalOutput.toString()))
+            info.add(Pair("Active Display Mode", "${display.physicalOutput.id}"))
+            display.supportedModes.forEach { mode ->
+                info.add(
+                    Pair(
+                        "Display Mode ${mode.id}",
+                        mode.toString()
+                    )
+                )
+            }
+        }
 
         info.add(Pair("Supports HDR", "${display.supportsHDR}"))
         info.add(Pair("Luminance Range", if (display.supportsHDR) "${display.minimumLuminance}-${display.maximumLuminance}" else ""))

@@ -5,6 +5,7 @@ import android.view.Display as NativeDisplay
 import android.content.Context
 import android.graphics.Point
 import android.hardware.display.DisplayManager
+import android.icu.util.Output
 import android.os.Build
 
 enum class HDRFormat() {
@@ -36,7 +37,7 @@ fun DisplayStateToPowerState(value: Int): PowerState {
     }
 }
 
-class OutputDescription(val width: Int, val height: Int, val refreshRate: Float) {
+class OutputDescription(val id: Int, val width: Int, val height: Int, val refreshRate: Float) {
     override fun toString(): String {
         return "${width}x${height}@${refreshRate}"
     }
@@ -57,6 +58,7 @@ class Display(source: NativeDisplay) {
 
     val renderOutput: OutputDescription
     val physicalOutput: OutputDescription?
+    val supportedModes: List<OutputDescription>
 
     // HDR information
     val supportsHDR: Boolean
@@ -80,14 +82,16 @@ class Display(source: NativeDisplay) {
         // Get render sizes
         val renderPoint = Point()
         source.getSize(renderPoint)
-        renderOutput = OutputDescription(renderPoint.x, renderPoint.y, source.refreshRate)
+        renderOutput = OutputDescription(-1, renderPoint.x, renderPoint.y, source.refreshRate)
 
         // If available on device get display mode
         if(Build.VERSION.SDK_INT >= 23) {
             val mode = source.mode
-            physicalOutput = OutputDescription(mode.physicalWidth, mode.physicalHeight, mode.refreshRate)
+            physicalOutput = OutputDescription(mode.modeId, mode.physicalWidth, mode.physicalHeight, mode.refreshRate)
+            supportedModes = source.supportedModes.map { OutputDescription(it.modeId, it.physicalWidth, it.physicalHeight, it.refreshRate) }
         } else {
             physicalOutput = null
+            supportedModes = listOf()
         }
 
         // Check HDR Capabilities if available on device
