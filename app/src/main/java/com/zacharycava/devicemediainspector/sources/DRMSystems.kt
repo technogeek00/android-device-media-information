@@ -1,7 +1,9 @@
 package com.zacharycava.devicemediainspector.sources
 
 import android.media.MediaDrm
+import android.media.MediaDrmResetException
 import android.os.Build
+import android.util.Log
 import java.util.*
 
 enum class VendorProperty(val sdkVersion: Int, val propertyName: String) {
@@ -71,10 +73,10 @@ class DRMSystem(id: SystemIDs) {
 
     init {
         val system = MediaDrm(id.uuid)
-        vendor = system.getPropertyString(MediaDrm.PROPERTY_VENDOR)
-        description = system.getPropertyString(MediaDrm.PROPERTY_DESCRIPTION)
-        version = system.getPropertyString(MediaDrm.PROPERTY_VERSION)
-        algorithms = system.getPropertyString(MediaDrm.PROPERTY_ALGORITHMS)
+        vendor = safePropertyFetch(system, MediaDrm.PROPERTY_VENDOR)
+        description = safePropertyFetch(system, MediaDrm.PROPERTY_DESCRIPTION)
+        version = safePropertyFetch(system, MediaDrm.PROPERTY_VERSION)
+        algorithms = safePropertyFetch(system, MediaDrm.PROPERTY_ALGORITHMS)
 
         vendorProperties = id.properties.map { property ->
             var result: Pair<VendorProperty, String> = Pair(property, "")
@@ -91,10 +93,30 @@ class DRMSystem(id: SystemIDs) {
         maxHdcpLevel = MediaDrmToHDCPLevel(if (Build.VERSION.SDK_INT >= 28) system.maxHdcpLevel else null)
         maxSessionCount = if (Build.VERSION.SDK_INT >= 28) system.maxSessionCount else -1
     }
+
+    private fun safePropertyFetch(system: MediaDrm, property: String): String {
+        try {
+            return system.getPropertyString(property)
+        } catch (err: MediaDrm.MediaDrmStateException) {
+            Log.e("DRMSystems", "$property failure, debugging data: ${err.diagnosticInfo}")
+        }
+
+        return "Unknown"
+    }
 }
 
 fun getDRMSystems(): List<DRMSystem> {
     return listOf(SystemIDs.ClearKey, SystemIDs.PlayReady, SystemIDs.Widevine)
         .filter { MediaDrm.isCryptoSchemeSupported(it.uuid) }
-        .map { DRMSystem(it) }
+        .map {
+            var result: DRMSystem? = null
+            try {
+                result = DRMSystem(it)
+            } catch(err: Exception) {
+                Log.e("DRMSystems", err.localizedMessage);
+            }
+
+            result
+        }
+        .filterNotNull()
 }

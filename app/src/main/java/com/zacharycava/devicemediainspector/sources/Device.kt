@@ -12,6 +12,13 @@ class BuildInfo {
     val fingerprint: String = Build.FINGERPRINT
 }
 
+class VersionInfo {
+    val base: String = Build.VERSION.BASE_OS
+    val codename: String = Build.VERSION.CODENAME
+    val release: String = Build.VERSION.RELEASE
+    val patch: String = Build.VERSION.SECURITY_PATCH
+}
+
 class Device {
     val manufacturer: String = Build.MANUFACTURER
     val model: String = Build.MODEL
@@ -19,6 +26,7 @@ class Device {
     val consumerBrand: String = Build.BRAND
     val board: String = Build.BOARD
     val device: String = Build.DEVICE
+    val hardware: String = Build.HARDWARE
 
     val bootloader: String = Build.BOOTLOADER
     val host: String = Build.HOST
